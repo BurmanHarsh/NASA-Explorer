@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA Space Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Exo 2', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px 0 40px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 4s ease infinite;
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+            text-shadow: 0 0 30px rgba(255,255,255,0.3);
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            font-weight: 300;
+            opacity: 0.9;
+            margin-bottom: 35px;
+            letter-spacing: 1px;
+            font-style: italic;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .tab-btn {
+            padding: 18px 35px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: transparent;
+            box-shadow: 0 10px 30px rgba(255,107,107,0.3);
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.3);
+        }
+
+        .card h2 {
+            font-family: 'Orbitron', monospace;
+            color: #4ecdc4;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .apod-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.3rem;
+            font-weight: 400;
+            opacity: 0.8;
+            letter-spacing: 0.5px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #4ecdc4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .mars-photo {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .photo-info {
+            font-size: 1.05rem;
+            font-weight: 400;
+            opacity: 0.85;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 18px 25px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 400;
+            backdrop-filter: blur(10px);
+            letter-spacing: 0.5px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.7);
+            font-weight: 300;
+        }
+
+        .search-btn {
+            padding: 18px 35px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,107,107,0.3);
+        }
+
+        .iss-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .info-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #4ecdc4;
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        }
+
+        .info-label {
+            font-size: 1.05rem;
+            font-weight: 500;
+            opacity: 0.85;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .asteroids-list {
+            max-height: 500px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #4ecdc4 rgba(255,255,255,0.1);
+        }
+
+        .asteroid-item {
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .asteroid-name {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .asteroid-detail {
+            font-size: 1.05rem;
+            font-weight: 400;
+            opacity: 0.85;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .dangerous {
+            border-left-color: #ff6b6b;
+        }
+
+        .error-message {
+            background: rgba(255,107,107,0.1);
+            border: 1px solid rgba(255,107,107,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .success-note {
+            background: rgba(76,175,80,0.1);
+            border: 1px solid rgba(76,175,80,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+            
+            .logo {
+                font-size: 3.2rem;
+                letter-spacing: 2px;
+            }
+            
+            .tagline {
+                font-size: 1.3rem;
+            }
+            
+            .card h2 {
+                font-size: 1.9rem;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab-btn {
+                font-size: 1rem;
+                padding: 16px 30px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                min-width: 100%;
+                font-size: 1rem;
+            }
+            
+            .search-btn {
+                font-size: 1rem;
+            }
+            
+            .info-value {
+                font-size: 1.6rem;
+            }
+            
+            .asteroid-name {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="logo">NASA EXPLORER</h1>
+            <p class="tagline">Discover the wonders of space through NASA's eyes</p>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('apod')">Astronomy Picture</button>
+            <button class="tab-btn" onclick="showTab('mars')">Mars Rover Photos</button>
+            <button class="tab-btn" onclick="showTab('iss')">ISS Location</button>
+            <button class="tab-btn" onclick="showTab('asteroids')">Near Earth Objects</button>
+            <button class="tab-btn" onclick="showTab('images')">NASA Image Search</button>
+        </nav>
+
+        <!-- APOD Section -->
+        <div id="apod" class="content-section active">
+            <div class="card">
+                <h2>Astronomy Picture of the Day</h2>
+                <div id="apod-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading today's astronomical wonder...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mars Rover Photos Section -->
+        <div id="mars" class="content-section">
+            <div class="card">
+                <h2>Mars Rover Photos</h2>
+                <div class="search-bar">
+                    <input type="date" id="mars-date" class="search-input" style="max-width: 200px;">
+                    <select id="rover-select" class="search-input" style="max-width: 150px;">
+                        <option value="curiosity">Curiosity</option>
+                        <option value="opportunity">Opportunity</option>
+                        <option value="spirit">Spirit</option>
+                        <option value="perseverance">Perseverance</option>
+                    </select>
+                    <button class="search-btn" onclick="loadMarsPhotos()">Get Photos</button>
+                </div>
+                <div id="mars-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading Mars rover photos...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ISS Location Section -->
+        <div id="iss" class="content-section">
+            <div class="card">
+                <h2>International Space Station</h2>
+                <div id="iss-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Tracking the ISS...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asteroids Section -->
+        <div id="asteroids" class="content-section">
+            <div class="card">
+                <h2>Near Earth Objects (Today)</h2>
+                <div id="asteroids-content">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Scanning for near Earth objects...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NASA Images Search Section -->
+        <div id="images" class="content-section">
+            <div class="card">
+                <h2>NASA Image & Video Library</h2>
+                <div class="search-bar">
+                    <input type="text" id="image-search" class="search-input" placeholder="Search NASA images... (e.g., hubble, moon, saturn)">
+                    <button class="search-btn" onclick="searchNASAImages()">Search</button>
+                </div>
+                <div id="images-content">
+                    <p style="text-align: center; opacity: 0.7; padding: 40px;">
+                        Enter a search term to explore NASA's vast image and video collection
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // NASA API Configuration
+        const NASA_API_KEYS = {
+            primary: 'dgwUSIH1RjAMqjqBoW4iVE97JTbudrqG1EsGSSbr',
+            secondary: 'Z89vxNXRKXrC9siBI8wwMmGyb5PQJC48OFCpf7h0'
+        };
+
+        // API endpoints - Direct calls (no CORS proxy needed!)
+        const API_ENDPOINTS = {
+            apod: `https://api.nasa.gov/planetary/apod?api_key=${NASA_API_KEYS.primary}`,
+            mars: (rover, date) => `https://api.nasa.gov/mars-photos/api/v1/rovers/${rover}/photos?earth_date=${date}&api_key=${NASA_API_KEYS.primary}`,
+            iss: 'http://api.open-notify.org/iss-now.json',
+            astros: 'http://api.open-notify.org/astros.json',
+            asteroids: (date) => `https://api.nasa.gov/neo/rest/v1/feed?start_date=${date}&end_date=${date}&api_key=${NASA_API_KEYS.primary}`,
+            neoBrowse: `https://api.nasa.gov/neo/rest/v1/neo/browse?api_key=${NASA_API_KEYS.primary}`,
+            nasaImages: (query) => `https://images-api.nasa.gov/search?q=${encodeURIComponent(query)}&media_type=image&page_size=12`
+        };
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 100;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = Math.random() * 3 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            
+            event.target.classList.add('active');
+            
+            loadTabContent(tabName);
+        }
+
+        function loadTabContent(tabName) {
+            switch(tabName) {
+                case 'apod':
+                    if (!document.querySelector('#apod-content img')) {
+                        loadAPOD();
+                    }
+                    break;
+                case 'mars':
+                    if (!document.querySelector('#mars-content .mars-photo')) {
+                        loadMarsPhotos();
+                    }
+                    break;
+                case 'iss':
+                    loadISSLocation();
+                    break;
+                case 'asteroids':
+                    if (!document.querySelector('#asteroids-content .asteroid-item')) {
+                        loadAsteroids();
+                    }
+                    break;
+            }
+        }
+
+        async function makeAPICall(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('API call failed:', error);
+                throw error;
+            }
+        }
+
+        async function loadAPOD() {
+            const content = document.getElementById('apod-content');
+            
+            try {
+                const data = await makeAPICall(API_ENDPOINTS.apod);
+                
+                content.innerHTML = `
+                    <div class="success-note">
+                        <strong>✅ Live Data:</strong> Connected to NASA's APOD API successfully!
+                    </div>
+                    <h3 style="color: #ff6b6b; margin-bottom: 18px; font-size: 1.8rem; font-weight: 600; letter-spacing: 1px;">${data.title}</h3>
+                    <p style="margin-bottom: 25px; opacity: 0.85; font-size: 1.1rem; font-weight: 500;">Date: ${data.date}</p>
+                    ${data.media_type === 'image' 
+                        ? `<img src="${data.url}" alt="${data.title}" class="apod-image">` 
+                        : `<iframe src="${data.url}" width="100%" height="300" style="border-radius: 15px; margin-bottom: 20px;" allowfullscreen></iframe>`
+                    }
+                    <p style="line-height: 1.6;">${data.explanation}</p>
+                    ${data.copyright ? `<p style="margin-top: 15px; opacity: 0.7; font-style: italic;">© ${data.copyright}</p>` : ''}
+                `;
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="error-message">
+                        <strong>❌ APOD API Error:</strong><br>
+                        Status: ${error.message}<br><br>
+                        This might be due to API rate limits or network issues.<br>
+                        Your API key: ${NASA_API_KEYS.primary.substring(0, 8)}...
+                    </div>
+                `;
+            }
+        }
+
+        async function loadMarsPhotos() {
+            const rover = document.getElementById('rover-select').value;
+            const date = document.getElementById('mars-date').value || '2022-01-01';
+            
+            const content = document.getElementById('mars-content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div>Loading Mars photos...</div>';
+            
+            try {
+                const data = await makeAPICall(API_ENDPOINTS.mars(rover, date));
+                
+                if (data.photos && data.photos.length > 0) {
+                    const photos = data.photos.slice(0, 12);
+                    content.innerHTML = `
+                        <div class="success-note">
+                            <strong>🚀 Live Data:</strong> Found ${data.photos.length} photos from ${rover.charAt(0).toUpperCase() + rover.slice(1)} rover on ${date}
+                        </div>
+                        <div class="grid">
+                            ${photos.map(photo => `
+                                <div class="card" style="padding: 20px;">
+                                    <img src="${photo.img_src}" alt="Mars photo" class="mars-photo" loading="lazy">
+                                    <div class="photo-info">
+                                        <strong>Camera:</strong> ${photo.camera.full_name}<br>
+                                        <strong>Sol:</strong> ${photo.sol}<br>
+                                        <strong>Earth Date:</strong> ${photo.earth_date}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="success-note">
+                            <strong>📡 API Connected:</strong> No photos found for this date/rover combination.
+                        </div>
+                        <p style="text-align: center; opacity: 0.7; padding: 20px;">
+                            No photos found for ${rover.charAt(0).toUpperCase() + rover.slice(1)} rover on ${date}. 
+                            <br>Try a different date or rover combination.
+                        </p>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="error-message">
+                        <strong>❌ Mars Photos Error:</strong><br>
+                        ${error.message}<br><br>
+                        Rover: ${rover}, Date: ${date}<br>
+                        API Key: ${NASA_API_KEYS.primary.substring(0, 8)}...
+                    </div>
+                `;
+            }
+        }
+
+        async function searchNASAImages() {
+            const query = document.getElementById('image-search').value.trim();
+            if (!query) return;
+            
+            const content = document.getElementById('images-content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div>Searching NASA archives...</div>';
+            
+            try {
+                // NASA Images API is CORS-enabled
+                const data = await fetch(API_ENDPOINTS.nasaImages(query)).then(r => r.json());
+                
+                if (data.collection && data.collection.items.length > 0) {
+                    const items = data.collection.items;
+                    content.innerHTML = `
+                        <div class="success-note">
+                            <strong>🔍 Live Data:</strong> Found ${items.length} results from NASA's image library for "${query}"!
+                        </div>
+                        <div class="grid">
+                            ${items.map(item => `
+                                <div class="card" style="padding: 20px;">
+                                    <img src="${item.links && item.links[0] ? item.links[0].href : ''}" 
+                                         alt="${item.data[0].title}" 
+                                         style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px; margin-bottom: 15px;"
+                                         crossorigin="anonymous"
+                                         loading="lazy"
+                                         onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100\" height=\"100\" viewBox=\"0 0 100 100\"><rect width=\"100\" height=\"100\" fill=\"%23333\"/><text x=\"50\" y=\"45\" text-anchor=\"middle\" fill=\"white\" font-size=\"10\">NASA</text><text x=\"50\" y=\"60\" text-anchor=\"middle\" fill=\"white\" font-size=\"8\">Image</text></svg>'">
+                                    <h4 style="color: #4ecdc4; margin-bottom: 10px; font-size: 1.1rem; line-height: 1.3;">${item.data[0].title}</h4>
+                                    <p style="font-size: 0.9rem; opacity: 0.8; line-height: 1.4; margin-bottom: 10px;">
+                                        ${item.data[0].description ? 
+                                            (item.data[0].description.length > 150 ? 
+                                                item.data[0].description.substring(0, 150) + '...' : 
+                                                item.data[0].description
+                                            ) : 'No description available'
+                                        }
+                                    </p>
+                                    <p style="font-size: 0.8rem; opacity: 0.6;">
+                                        ${item.data[0].date_created ? new Date(item.data[0].date_created).toLocaleDateString() : 'Date unknown'}
+                                    </p>
+                                    ${item.data[0].photographer ? `<p style="font-size: 0.8rem; opacity: 0.6;">📷 ${item.data[0].photographer}</p>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="success-note">
+                            <strong>🔍 Connected:</strong> Successfully connected to NASA's image library, but no results found.
+                        </div>
+                        <p style="text-align: center; opacity: 0.7; padding: 20px;">
+                            No images found for "${query}". Try different keywords like "mars", "hubble", "earth", "jupiter", etc.
+                        </p>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="error-message">
+                        <strong>⚠️ Image Search Error:</strong> Unable to search NASA's image library.
+                        <br><br>Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Event listeners
+        document.getElementById('image-search').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchNASAImages();
+            }
+        });
+
+        // Auto-refresh ISS location every 30 seconds when on ISS tab
+        let issRefreshInterval;
+        
+        function startISSAutoRefresh() {
+            if (issRefreshInterval) clearInterval(issRefreshInterval);
+            issRefreshInterval = setInterval(() => {
+                if (document.getElementById('iss').classList.contains('active')) {
+                    loadISSLocation();
+                }
+            }, 30000);
+        }
+
+        function stopISSAutoRefresh() {
+            if (issRefreshInterval) {
+                clearInterval(issRefreshInterval);
+                issRefreshInterval = null;
+            }
+        }
+
+        // Initialize the app
+        function initializeApp() {
+            createStars();
+            loadAPOD();
+            startISSAutoRefresh();
+            
+            // Set default Mars date to yesterday (rovers need time to process images)
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            document.getElementById('mars-date').value = yesterday.toISOString().split('T')[0];
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopISSAutoRefresh();
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+        
+        // Fallback initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
+</body>
+</html>
+                    </div>
+                `;
+            }
+        }
+<script>
+        async function loadISSLocation() {
+            const content = document.getElementById('iss-content');
+            content.innerHTML = '<div class="loading"><div class="spinner"></div>Tracking ISS...</div>';
+            
+            try {
+                // ISS APIs are CORS-enabled, so we can call them directly
+                const [locationData, astroData] = await Promise.all([
+                    fetch(API_ENDPOINTS.iss).then(r => r.json()),
+                    fetch(API_ENDPOINTS.astros).then(r => r.json())
+                ]);
+                
+                content.innerHTML = `
+                    <div class="success-note">
+                        <strong>🛰️ Live Data:</strong> Real-time ISS tracking data updated successfully!
+                    </div>
+                    <div class="iss-info">
+                        <div class="info-item">
+                            <div class="info-value">${parseFloat(locationData.iss_position.latitude).toFixed(2)}°</div>
+                            <div class="info-label">Latitude</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-value">${parseFloat(locationData.iss_position.longitude).toFixed(2)}°</div>
+                            <div class="info-label">Longitude</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-value">${astroData.number}</div>
+                            <div class="info-label">People in Space</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-value">${new Date(locationData.timestamp * 1000).toLocaleTimeString()}</div>
+                            <div class="info-label">Last Updated</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <h3 style="color: #4ecdc4; margin-bottom: 15px;">Current Crew</h3>
+                        <div class="grid">
+                            ${astroData.people.map(person => `
+                                <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                                    <strong>${person.name}</strong><br>
+                                    <span style="opacity: 0.8;">${person.craft}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="error-message">
+                        <strong>⚠️ ISS Tracking Error:</strong> Unable to load ISS data.
+                        <br><br>Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function loadAsteroids() {
+            const content = document.getElementById('asteroids-content');
+            const today = new Date().toISOString().split('T')[0];
+            
+            try {
+                const data = await makeAPICall(API_ENDPOINTS.asteroids(today));
+                
+                const asteroids = data.near_earth_objects[today] || [];
+                
+                if (asteroids.length > 0) {
+                    content.innerHTML = `
+                        <div class="success-note">
+                            <strong>☄️ Live Data:</strong> Found ${asteroids.length} near Earth objects for today!
+                        </div>
+                        <div class="asteroids-list">
+                            ${asteroids.map(asteroid => `
+                                <div class="asteroid-item ${asteroid.is_potentially_hazardous_asteroid ? 'dangerous' : ''}">
+                                    <div class="asteroid-name">
+                                        ${asteroid.name}
+                                        ${asteroid.is_potentially_hazardous_asteroid ? ' ⚠️ POTENTIALLY HAZARDOUS' : ''}
+                                    </div>
+                                    <div class="asteroid-detail">
+                                        <strong>Diameter:</strong> ${Math.round(asteroid.estimated_diameter.meters.estimated_diameter_min)} - ${Math.round(asteroid.estimated_diameter.meters.estimated_diameter_max)} meters
+                                    </div>
+                                    <div class="asteroid-detail">
+                                        <strong>Closest Approach:</strong> ${new Date(asteroid.close_approach_data[0].close_approach_date_full).toLocaleString()}
+                                    </div>
+                                    <div class="asteroid-detail">
+                                        <strong>Miss Distance:</strong> ${parseInt(asteroid.close_approach_data[0].miss_distance.kilometers).toLocaleString()} km
+                                    </div>
+                                    <div class="asteroid-detail">
+                                        <strong>Velocity:</strong> ${Math.round(asteroid.close_approach_data[0].relative_velocity.kilometers_per_hour).toLocaleString()} km/h
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="success-note">
+                            <strong>☄️ API Connected:</strong> No near Earth objects detected for today.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                content.innerHTML = `
+                    <div class="error-message">
+                        <strong>❌ Asteroid API Error:</strong><br>
+                        ${error.message}<br><br>
+                        Date: ${today}<br>
+                        API Key: ${NASA_API_KEYS.primary.substring(0, 8)}...
+                    </div>
+                `;
+            }
+        }
+      </script>
+                        <br><br>This might be due to CORS restrictions or API limits.
